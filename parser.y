@@ -5,7 +5,7 @@ rule
   prologue_declarations: # empty
                        | prologue_declarations prologue_declaration
 
-  prologue_declaration: "%{" {@lexer.status = :c_declaration; @lexer.end_symbol = '%}'; @grammar.prologue_first_lineno = @lexer.line} C_DECLARATION {@lexer.status = :initial; @lexer.end_symbol = nil} "%}" { @grammar.prologue = val[2] }
+  prologue_declaration: "%{" {@status = :c_declaration; @lexer.end_symbol = '%}'; @grammar.prologue_first_lineno = @lexer.line} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "%}" { @grammar.prologue = val[2] }
                       | "%require" STRING
 
   bison_declarations: /* empty */ { result = "" }
@@ -18,14 +18,14 @@ rule
                    | "%param" params
                    | "%lex-param" params { val[1].each {|token| token.references = []; @grammar.lex_param = @grammar.build_code(:lex_param, token).token_code.s_value} }
                    | "%parse-param" params { val[1].each {|token| token.references = []; @grammar.parse_param = @grammar.build_code(:parse_param, token).token_code.s_value} }
-                   | "%initial-action" "{" {@lexer.status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@lexer.status = :initial; @lexer.end_symbol = nil} "}" { code = build_token(type: :User_code, s_value: val[3], line: @lineno.pop, column: @column.pop); code.references = []; @grammar.initial_action = @grammar.build_code(:initial_action, code) }
+                   | "%initial-action" "{" {@status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "}" { code = build_token(type: :User_code, s_value: val[3], line: @lineno.pop, column: @column.pop); code.references = []; @grammar.initial_action = @grammar.build_code(:initial_action, code) }
                    | ";"
 
-  grammar_declaration: "%union" "{" {@lexer.status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@lexer.status = :initial; @lexer.end_symbol = nil} "}" { code = build_token(type: :User_code, s_value: val[3], line: @lineno.pop, column: @column.pop); code.references = []; @grammar.set_union(@grammar.build_code(:union, code), code.line) }
+  grammar_declaration: "%union" "{" {@status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "}" { code = build_token(type: :User_code, s_value: val[3], line: @lineno.pop, column: @column.pop); code.references = []; @grammar.set_union(@grammar.build_code(:union, code), code.line) }
                      | symbol_declaration
-                     | "%destructor" "{" {@lexer.status = :c_declaration; @lexer.end_symbol = '}'} C_DECLARATION {@lexer.status = :initial; @lexer.end_symbol = nil} "}" generic_symlist
-                     | "%printer" "{" {@lexer.status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@lexer.status = :initial; @lexer.end_symbol = nil} "}" generic_symlist { code = build_token(type: :User_code, s_value: val[3], line: @lineno.pop, column: @column.pop); code.references = []; @grammar.add_printer(ident_or_tags: val[6], code: @grammar.build_code(:printer, code), lineno: code.line) }
-                     | "%error-token" "{" {@lexer.status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@lexer.status = :initial; @lexer.end_symbol = nil} "}" generic_symlist { code = build_token(type: :User_code, s_value: val[3], line: @lineno.pop, column: @column.pop); code.references = []; @grammar.add_error_token(ident_or_tags: val[6], code: @grammar.build_code(:error_token, code), lineno: code.line) }
+                     | "%destructor" "{" {@status = :c_declaration; @lexer.end_symbol = '}'} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "}" generic_symlist
+                     | "%printer" "{" {@status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "}" generic_symlist { code = build_token(type: :User_code, s_value: val[3], line: @lineno.pop, column: @column.pop); code.references = []; @grammar.add_printer(ident_or_tags: val[6], code: @grammar.build_code(:printer, code), lineno: code.line) }
+                     | "%error-token" "{" {@status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "}" generic_symlist { code = build_token(type: :User_code, s_value: val[3], line: @lineno.pop, column: @column.pop); code.references = []; @grammar.add_error_token(ident_or_tags: val[6], code: @grammar.build_code(:error_token, code), lineno: code.line) }
 
   symbol_declaration: "%token" token_declarations
                     | "%type" symbol_declarations { val[1].each {|hash| hash[:tokens].each {|id| @grammar.add_type(id: id, tag: hash[:tag]) } } }
@@ -58,8 +58,8 @@ rule
 
   symbol: id
 
-  params: params "{" {@lexer.status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@lexer.status = :initial; @lexer.end_symbol = nil} "}" { result = val[0].append(build_token(type: :User_code, s_value: val[3], line: @lineno.pop, column: @column.pop)) }
-        | "{" {@lexer.status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@lexer.status = :initial; @lexer.end_symbol = nil} "}" { result = [build_token(type: :User_code, s_value: val[2], line: @lineno.pop, column: @column.pop)] }
+  params: params "{" {@status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "}" { result = val[0].append(build_token(type: :User_code, s_value: val[3], line: @lineno.pop, column: @column.pop)) }
+        | "{" {@status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "}" { result = [build_token(type: :User_code, s_value: val[2], line: @lineno.pop, column: @column.pop)] }
 
   token_declarations_for_precedence: token_declaration_list_for_precedence { result = [{tag: nil, tokens: val[0]}] }
                                    | TAG token_declaration_list_for_precedence { result = [{tag: Lrama::Lexer::Token.new(type: Lrama::Lexer::Token::Tag, s_value: val[0]), tokens: val[1]}] }
@@ -87,8 +87,8 @@ rule
 
   rhs: /* empty */ { result = [] }
      | rhs symbol named_ref_opt { token = val[1]; val[1].alias = val[2]; result = val[0].append(token) }
-     | rhs "{" {@lexer.status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@lexer.status = :initial; @lexer.end_symbol = nil} "}" named_ref_opt { result = val[0].append(build_token(type: :User_code, s_value: val[1..5].join, line: @lineno.pop, column: @column.pop, alias_name: val[6])) }
-     | "{" {@lexer.status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@lexer.status = :initial; @lexer.end_symbol = nil} "}" named_ref_opt { result = [build_token(type: :User_code, s_value: val[0..4].join, line: @lineno.pop, column: @column.pop, alias_name: val[5])] }
+     | rhs "{" {@status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "}" named_ref_opt { result = val[0].append(build_token(type: :User_code, s_value: val[1..5].join, line: @lineno.pop, column: @column.pop, alias_name: val[6])) }
+     | "{" {@status = :c_declaration; @lexer.end_symbol = '}'; @lineno.push(@lexer.line); @column.push(@lexer.col)} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "}" named_ref_opt { result = [build_token(type: :User_code, s_value: val[0..4].join, line: @lineno.pop, column: @column.pop, alias_name: val[5])] }
      | rhs "%prec" symbol { sym = @grammar.find_symbol_by_id!(val[2]); result = val[0].append(sym) }
 
   named_ref_opt: # empty
@@ -97,7 +97,7 @@ rule
   id_colon: id
 
   epilogue_opt: # empty
-              | "%%" {@lexer.status = :c_declaration; @lexer.end_symbol = '\Z'; @grammar.epilogue_first_lineno = @lexer.line + 1} C_DECLARATION {@lexer.status = :initial; @lexer.end_symbol = nil; @grammar.epilogue = val[2] }
+              | "%%" {@status = :c_declaration; @lexer.end_symbol = '\Z'; @grammar.epilogue_first_lineno = @lexer.line + 1} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil; @grammar.epilogue = val[2] }
 
   variable: id
 
@@ -126,6 +126,7 @@ def initialize(text)
 end
 
 def parse
+  @status = :initial
   @lexer = Lrama::NewLexer.new(@text)
   @grammar = Lrama::Grammar.new
   @precedence_number = 0
@@ -138,7 +139,12 @@ def parse
 end
 
 def next_token
-  @lexer.next_token
+  case @status
+  when :initial
+    @lexer.lex_token
+  when :c_declaration
+    @lexer.lex_c_code
+  end
 end
 
 def build_token(type:, s_value:, line:, column:, alias_name: nil)

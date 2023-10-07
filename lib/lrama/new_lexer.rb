@@ -2,24 +2,13 @@ require "strscan"
 
 module Lrama
   class NewLexer
-    attr_accessor :status
     attr_accessor :end_symbol
 
     def initialize(text)
       @scanner = StringScanner.new(text)
       @head = @scanner.pos
       @line = 1
-      @status = :initial
       @end_symbol = nil
-    end
-
-    def next_token
-      case @status
-      when :initial
-        lex_token
-      when :c_declaration
-        lex_c_code
-      end
     end
 
     def line

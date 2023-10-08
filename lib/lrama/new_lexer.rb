@@ -15,7 +15,7 @@ module Lrama
       %type
       %left
       %right
-      %noassoc
+      %nonassoc
       %expect
       %define
       %require

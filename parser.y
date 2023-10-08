@@ -57,6 +57,7 @@ rule
                          | symbol_declaration_list symbol { result = val[0].append(val[1]) }
 
   symbol: id
+        | STRING { result = @lexer.send(:build_token, type: Lrama::Lexer::Token::Ident, s_value: val[0]) }
 
   params: params "{" {@status = :c_declaration; @lexer.end_symbol = '}'} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "}" { result = val[0].append(val[3]) }
         | "{" {@status = :c_declaration; @lexer.end_symbol = '}'} C_DECLARATION {@status = :initial; @lexer.end_symbol = nil} "}" { result = [val[2]] }
@@ -117,6 +118,7 @@ end
 
 def initialize(text)
   @text = text
+  @yydebug = true
 end
 
 def parse

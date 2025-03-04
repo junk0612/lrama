@@ -114,7 +114,7 @@ module Lrama
 
       # @rbs (States::Item other_item) -> bool
       def predecessor_item_of?(other_item)
-        rule == other_item.rule && position == other_item.position - 1
+        position == other_item.position - 1 && rule == other_item.rule
       end
     end
   end
